@@ -64,19 +64,54 @@ router.post('/login/marketadmin', (req, res) => {
 });
 
 // Merchant authentication
-router.post('/register/marketadmin', (req, res) => {
+router.post('/register/merchant', (req, res) => {
   const { username, password } = req.body;
-
-  const connection = getConnection();
-  const query = 'INSERT INTO ';
-  connection.query('');
-
-  res.end(`Register with Username: ${username} Password: ${password}`);
+  findMerchantByUsernamePassword(
+    username,
+    password,
+    (error, results, fields) => {
+      if (error) {
+        createError(404, error, res);
+      }
+      if (results.length === 0) {
+        createMerchant(username, password, (error, results, fields) => {
+          if (error) {
+            createError(404, error, res);
+          } else {
+            createResponse(
+              201,
+              {
+                insertId: results.insertId,
+                affectedRows: results.affectedRows,
+                changedRows: results.changedRows
+              },
+              res
+            );
+          }
+        });
+      } else {
+        createError(409, 'This username is already taken', res);
+      }
+    }
+  );
 });
 
-router.post('/login', (req, res) => {
+router.post('/login/merchant', (req, res) => {
   const { username, password } = req.body;
-  res.end(`Login with Username: ${username} Password: ${password}`);
+  findMerchantByUsernamePassword(
+    username,
+    password,
+    (error, results, fields) => {
+      if (error) {
+        createError(404, error, res);
+      }
+      if (results.length === 1) {
+        createResponse(200, { merchantId: results[0].merchant_id }, res);
+      } else {
+        createError(404, 'Incorrect username or password', res);
+      }
+    }
+  );
 });
 
 // Utility function
@@ -105,6 +140,25 @@ function findMarketAdminByUsernamePassword(username, password, callback) {
 function createMarketAdmin(username, password, callback) {
   const connection = getConnection();
   const query = 'INSERT INTO market_admins (username, password) VALUES (?, ?)';
+  connection.query(query, [username, password], (error, results, fields) => {
+    connection.end();
+    callback(error, results, fields);
+  });
+}
+
+function findMerchantByUsernamePassword(username, password, callback) {
+  const connection = getConnection();
+  const query =
+    'SELECT merchant_id FROM merchants WHERE username = ? AND password = ?';
+  connection.query(query, [username, password], (error, results, fields) => {
+    connection.end();
+    callback(error, results, fields);
+  });
+}
+
+function createMerchant(username, password, callback) {
+  const connection = getConnection();
+  const query = 'INSERT INTO merchants (username, password) VALUES (?, ?)';
   connection.query(query, [username, password], (error, results, fields) => {
     connection.end();
     callback(error, results, fields);
