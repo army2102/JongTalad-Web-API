@@ -1,12 +1,8 @@
 const express = require('express');
-const mysql = require('mysql');
+
 const router = express.Router();
 
-const CONFIG = require('../config/config');
-
-function getConnection() {
-  return mysql.createConnection(CONFIG.JAWSDB_URL);
-}
+const connection = require('./connect');
 
 router.get('/', (req, res, next) => {
   res.render('index', { title: 'Auth route' });
@@ -116,7 +112,11 @@ router.post('/login/merchant', (req, res) => {
 
 // Utility function
 function createError(statusCode = 404, error, res) {
-  res.status(404).json({ code: statusCode, error, response: null });
+  res.status(statusCode).json({
+    code: res.statusCode,
+    error,
+    response: null
+  });
 }
 
 function createResponse(statusCode = 200, responseBody, res) {
@@ -128,39 +128,31 @@ function createResponse(statusCode = 200, responseBody, res) {
 }
 
 function findMarketAdminByUsernamePassword(username, password, callback) {
-  const connection = getConnection();
   const query =
     'SELECT market_admin_id FROM market_admins WHERE username = ? AND password = ?';
   connection.query(query, [username, password], (error, results, fields) => {
-    connection.end();
     callback(error, results, fields);
   });
 }
 
 function createMarketAdmin(username, password, callback) {
-  const connection = getConnection();
   const query = 'INSERT INTO market_admins (username, password) VALUES (?, ?)';
   connection.query(query, [username, password], (error, results, fields) => {
-    connection.end();
     callback(error, results, fields);
   });
 }
 
 function findMerchantByUsernamePassword(username, password, callback) {
-  const connection = getConnection();
   const query =
     'SELECT merchant_id FROM merchants WHERE username = ? AND password = ?';
   connection.query(query, [username, password], (error, results, fields) => {
-    connection.end();
     callback(error, results, fields);
   });
 }
 
 function createMerchant(username, password, callback) {
-  const connection = getConnection();
   const query = 'INSERT INTO merchants (username, password) VALUES (?, ?)';
   connection.query(query, [username, password], (error, results, fields) => {
-    connection.end();
     callback(error, results, fields);
   });
 }
