@@ -7,6 +7,7 @@ const logger = require('morgan');
 const CONFIG = require('./config/config');
 const app = express();
 const authRouter = require('./routes/auth');
+const marketsRouter = require('./routes/markets');
 const indexRouter = require('./routes/index');
 
 // view engine setup
@@ -20,6 +21,7 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/auth', authRouter);
+app.use('/markets', marketsRouter);
 app.use('/', indexRouter);
 
 app.listen(CONFIG.PORT, () =>

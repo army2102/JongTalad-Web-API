@@ -2,6 +2,7 @@ const express = require('express');
 
 const router = express.Router();
 
+const utility = require('../utility');
 const connection = require('./connect');
 
 router.get('/', (req, res, next) => {
@@ -16,14 +17,14 @@ router.post('/register/marketadmin', (req, res) => {
     password,
     (error, results, fields) => {
       if (error) {
-        createError(404, error, res);
+        utility.createError(404, error, res);
       }
       if (results.length === 0) {
         createMarketAdmin(username, password, (error, results, fields) => {
           if (error) {
-            createError(404, error, res);
+            utility.createError(404, error, res);
           } else {
-            createResponse(
+            utility.createResponse(
               201,
               {
                 insertId: results.insertId,
@@ -35,7 +36,7 @@ router.post('/register/marketadmin', (req, res) => {
           }
         });
       } else {
-        createError(409, 'This username is already taken', res);
+        utility.createError(409, 'This username is already taken', res);
       }
     }
   );
@@ -48,12 +49,16 @@ router.post('/login/marketadmin', (req, res) => {
     password,
     (error, results, fields) => {
       if (error) {
-        createError(404, error, res);
+        utility.createError(404, error, res);
       }
       if (results.length === 1) {
-        createResponse(200, { marketAdminId: results[0].market_admin_id }, res);
+        utility.createResponse(
+          200,
+          { marketAdminId: results[0].market_admin_id },
+          res
+        );
       } else {
-        createError(404, 'Incorrect username or password', res);
+        utility.createError(404, 'Incorrect username or password', res);
       }
     }
   );
@@ -67,14 +72,14 @@ router.post('/register/merchant', (req, res) => {
     password,
     (error, results, fields) => {
       if (error) {
-        createError(404, error, res);
+        utility.createError(404, error, res);
       }
       if (results.length === 0) {
         createMerchant(username, password, (error, results, fields) => {
           if (error) {
-            createError(404, error, res);
+            utility.createError(404, error, res);
           } else {
-            createResponse(
+            utility.createResponse(
               201,
               {
                 insertId: results.insertId,
@@ -86,7 +91,7 @@ router.post('/register/merchant', (req, res) => {
           }
         });
       } else {
-        createError(409, 'This username is already taken', res);
+        utility.createError(409, 'This username is already taken', res);
       }
     }
   );
@@ -99,38 +104,40 @@ router.post('/login/merchant', (req, res) => {
     password,
     (error, results, fields) => {
       if (error) {
-        createError(404, error, res);
+        utility.createError(404, error, res);
       }
       if (results.length === 1) {
-        createResponse(200, { merchantId: results[0].merchant_id }, res);
+        utility.createResponse(
+          200,
+          { merchantId: results[0].merchant_id },
+          res
+        );
       } else {
-        createError(404, 'Incorrect username or password', res);
+        utility.createError(404, 'Incorrect username or password', res);
       }
     }
   );
 });
 
-// Utility function
-function createError(statusCode = 404, error, res) {
-  res.status(statusCode).json({
-    code: res.statusCode,
-    error,
-    response: null
-  });
-}
-
-function createResponse(statusCode = 200, responseBody, res) {
-  res.status(statusCode).json({
-    code: res.statusCode,
-    error: null,
-    response: responseBody
-  });
-}
-
 function findMarketAdminByUsernamePassword(username, password, callback) {
   const query =
     'SELECT market_admin_id FROM market_admins WHERE username = ? AND password = ?';
   connection.query(query, [username, password], (error, results, fields) => {
+    callback(error, results, fields);
+  });
+}
+
+function findMarketAdminById(id, callback) {
+  const query =
+    'SELECT market_admin_id FROM market_admins WHERE market_admin_id = ?';
+  connection.query(query, [id], (error, results, fields) => {
+    callback(error, results, fields);
+  });
+}
+
+function updateMarketAdminById(id, columnName, value, callback) {
+  const query = 'UPDATE market_admins SET ?? = ?  WHERE market_admin_id = ?';
+  connection.query(query, [columnName, value, id], (error, results, fields) => {
     callback(error, results, fields);
   });
 }
