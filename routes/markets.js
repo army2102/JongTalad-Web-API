@@ -25,20 +25,8 @@ router.get('/:marketId/locks/:lockId/types/:type', (req, res) => {
   });
 });
 
-router.post('/:marketId/locks/:lockId/reserve', (req, res) => {
-  const { marketId, lockId } = req.params;
-  const { marketAdminId, saleDate, merchantId, productTypeId } = req.body;
-  reserveMarketLock(
-    { marketId, lockId, marketAdminId, saleDate, merchantId, productTypeId },
-    (error, results, fields) => {
-      if (error) {
-        utility.createError(404, error, res);
-      } else {
-        utility.createResponse(200, results, res);
-      }
-    }
-  );
-});
+// TODO: Finish route logic //
+router.post('/:marketId/locks/:lockId/reserve', (req, res) => {});
 
 router.post('/:marketId/locks/:lockId/cencel', (req, res) => {});
 
@@ -58,25 +46,23 @@ function getMarketLocksByType(marketId, lockId, type, callback) {
   });
 }
 
-function reserveMarketLock(
-  { marketId, lockId, marketAdminId, saleDate, merchantId, productTypeId },
-  callback
-) {
-  const query = 'AL * FROM markets';
+// TODO: Finish route logic //
+function reserveMarketLock(callback) {
+  const query = '';
+  connection.query(query, (error, results, fields) => {
+    callback(error, results, fields);
+  });
+}
+
+function cancelMarketLock(callback) {
+  const query = '';
   connection.query(query, [mark], (error, results, fields) => {
     callback(error, results, fields);
   });
 }
 
-function cancelMarketLock(marketId, lockId, type, callback) {
-  const query = 'SELECT * FROM markets';
-  connection.query(query, [mark], (error, results, fields) => {
-    callback(error, results, fields);
-  });
-}
-
-function getMarketLockDetail(marketId, lockId, type, callback) {
-  const query = 'SELECT * FROM markets';
+function getMarketLockDetail(callback) {
+  const query = '';
   connection.query(query, [mark], (error, results, fields) => {
     callback(error, results, fields);
   });
