@@ -164,4 +164,16 @@ function createMerchant(username, password, callback) {
   });
 }
 
+function assignMarketAdminTo(marketAdminId, marketId, callback) {
+  const query =
+    'INSERT INTO  market_admin_markets (market_id, market_admin_id) VALUES (?, ?)';
+  connection.query(
+    query,
+    [marketAdminId, marketId],
+    (error, results, fields) => {
+      callback(error, results, fields);
+    }
+  );
+}
+
 module.exports = router;
