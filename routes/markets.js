@@ -101,7 +101,7 @@ router.get('/locks/:marketLockId/detail', (req, res) => {
 });
 
 function getMarketLocksByType({ marketId, type, saleDate }, callback) {
-  const query = `SELECT mlr.market_admin_id, mlr.merchant_id, ml.market_lock_id, ml.name, ml.price, mlr.sale_date, mlr.reservation_status 
+  const query = `SELECT mlr.market_admin_id AS marketAdminId, mlr.merchant_id AS merchantId, ml.market_lock_id AS marketLockId, ml.name AS marketLockName, ml.price AS marketLockPrice, mlr.sale_date AS saleDate, mlr.reservation_status AS reservationStatus
   FROM market_lock_reservations AS mlr
   JOIN market_locks AS ml ON ml.market_lock_id = mlr.market_lock_id
   JOIN markets ON ml.market_id = markets.market_id
@@ -144,7 +144,8 @@ function createMarketLock({ marketLockId, saleDate }, callback) {
 }
 
 function getMarketLockDetail({ marketLockId, saleDate }, callback) {
-  const query = `SELECT mlr.market_admin_id, mlr.merchant_id, ml.name AS market_lock_name, pt.name  FROM market_lock_reservations AS mlr
+  const query = `SELECT mlr.market_admin_id AS marketAdminId, mlr.merchant_id AS merchantId, ml.name AS marketLockName, pt.name AS productTypeName  
+  FROM market_lock_reservations AS mlr
   JOIN product_types AS pt ON mlr.product_type_id = pt.product_type_id
   JOIN market_locks AS ml ON mlr.market_lock_id = ml.market_lock_id
   WHERE mlr.reservation_status = 1

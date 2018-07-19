@@ -21,7 +21,7 @@ router.post(
     const { marketAdminId, marketLockId } = req.params;
     const { productTypeId, price, saleDate } = req.body;
     utility.checkMarketLockStatus(
-      { saleDate, marketLockId, type: 1},
+      { saleDate, marketLockId, type: 1 },
       (error, results, fields) => {
         if (error) {
           utility.createError(404, error, res);
@@ -60,8 +60,10 @@ router.post(
 );
 
 function getMarketAdminMarketsById(id, callback) {
-  const query =
-    'SELECT * FROM market_admin_markets AS mam JOIN markets ON mam.market_id = markets.market_id WHERE market_admin_id = ?';
+  const query = `SELECT mam.market_id AS marketId, mam.market_admin_id AS marketAdminId, markets.name AS marketName, markets.address AS marketAddress, markets.picture_url AS pictureUrl 
+  FROM market_admin_markets AS mam 
+  JOIN markets ON mam.market_id = markets.market_id 
+  WHERE market_admin_id = ?`;
   connection.query(query, [id], (error, results, fields) => {
     callback(error, results, fields);
   });

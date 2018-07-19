@@ -56,7 +56,9 @@ router.post('/:merchantId/markets/locks/:marketLockId/reserve', (req, res) => {
 });
 
 function getVerifiedMarkets(callback) {
-  const query = 'SELECT * FROM markets WHERE verified = 1';
+  const query = `SELECT market_id AS marketId, name AS marketName, address AS marketAddress, picture_url AS pictureUrl, verified 
+  FROM markets 
+  WHERE verified = 1`;
   connection.query(query, (error, results, fields) => {
     callback(error, results, fields);
   });

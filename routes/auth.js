@@ -121,7 +121,7 @@ router.post('/login/merchant', (req, res) => {
 
 function findMarketAdminByUsernamePassword(username, password, callback) {
   const query =
-    'SELECT market_admin_id FROM market_admins WHERE username = ? AND password = ?';
+    'SELECT market_admin_id AS marketAdminId FROM market_admins WHERE username = ? AND password = ?';
   connection.query(query, [username, password], (error, results, fields) => {
     callback(error, results, fields);
   });
@@ -129,7 +129,7 @@ function findMarketAdminByUsernamePassword(username, password, callback) {
 
 function findMarketAdminById(id, callback) {
   const query =
-    'SELECT market_admin_id FROM market_admins WHERE market_admin_id = ?';
+    'SELECT market_admin_id AS marketAdminId FROM market_admins WHERE market_admin_id = ?';
   connection.query(query, [id], (error, results, fields) => {
     callback(error, results, fields);
   });
@@ -151,7 +151,7 @@ function createMarketAdmin(username, password, callback) {
 
 function findMerchantByUsernamePassword(username, password, callback) {
   const query =
-    'SELECT merchant_id FROM merchants WHERE username = ? AND password = ?';
+    'SELECT merchant_id AS merchantId FROM merchants WHERE username = ? AND password = ?';
   connection.query(query, [username, password], (error, results, fields) => {
     callback(error, results, fields);
   });
