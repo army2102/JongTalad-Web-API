@@ -52,11 +52,7 @@ router.post('/login/marketadmin', (req, res) => {
         utility.createError(404, error, res);
       }
       if (results.length === 1) {
-        utility.createResponse(
-          200,
-          { marketAdminId: results[0].market_admin_id },
-          res
-        );
+        utility.createResponse(200, results, res);
       } else {
         utility.createError(404, 'Incorrect username or password', res);
       }
@@ -107,11 +103,7 @@ router.post('/login/merchant', (req, res) => {
         utility.createError(404, error, res);
       }
       if (results.length === 1) {
-        utility.createResponse(
-          200,
-          { merchantId: results[0].merchant_id },
-          res
-        );
+        utility.createResponse(200, results, res);
       } else {
         utility.createError(404, 'Incorrect username or password', res);
       }
