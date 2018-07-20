@@ -19,6 +19,31 @@ router.get('/:marketId/locks/types/:type', (req, res) => {
   );
 });
 
+router.get('/locks/:marketLockId/detail', (req, res) => {
+  const { marketLockId } = req.params;
+  const { saleDate } = req.query;
+  getMarketLockDetail({ marketLockId, saleDate }, (error, results, fields) => {
+    if (error) {
+      utility.createError(404, error, res);
+    }
+    if (results.length === 1) {
+      utility.createResponse(200, results, res);
+    } else if (results.length === 0) {
+      utility.createError(404, `This lock hasn't reserve yet`, res);
+    } else {
+      utility.createError(
+        404,
+        {
+          message:
+            'results.length >= 1, something might went wrong please contact admin at naetirat.s@gmail.com',
+          error: error || results
+        },
+        res
+      );
+    }
+  });
+});
+
 router.post('/locks/:marketLockId/cancel', (req, res) => {
   const { marketLockId } = req.params;
   const { saleDate } = req.body;
@@ -75,31 +100,6 @@ router.post('/locks/:marketLockId/cancel', (req, res) => {
   );
 });
 
-router.get('/locks/:marketLockId/detail', (req, res) => {
-  const { marketLockId } = req.params;
-  const { saleDate } = req.query;
-  getMarketLockDetail({ marketLockId, saleDate }, (error, results, fields) => {
-    if (error) {
-      utility.createError(404, error, res);
-    }
-    if (results.length === 1) {
-      utility.createResponse(200, results, res);
-    } else if (results.length === 0) {
-      utility.createError(404, `This lock hasn't reserve yet`, res);
-    } else {
-      utility.createError(
-        404,
-        {
-          message:
-            'results.length >= 1, something might went wrong please contact admin at naetirat.s@gmail.com',
-          error: error || results
-        },
-        res
-      );
-    }
-  });
-});
-
 function getMarketLocksByType({ marketId, type, saleDate }, callback) {
   const query = `SELECT mlr.market_admin_id AS marketAdminId, mlr.merchant_id AS merchantId, ml.market_lock_id AS marketLockId, ml.name AS marketLockName, ml.price AS marketLockPrice, mlr.sale_date AS saleDate, mlr.reservation_status AS reservationStatus
   FROM market_lock_reservations AS mlr
@@ -111,6 +111,41 @@ function getMarketLocksByType({ marketId, type, saleDate }, callback) {
   connection.query(
     query,
     [marketId, type, saleDate],
+    (error, results, fields) => {
+      callback(error, results, fields);
+    }
+  );
+}
+
+function getMarketLockDetail({ marketLockId, saleDate }, callback) {
+  const query = `SELECT mlr.market_lock_id AS marketLockId, 
+  ml.name AS marketLockName,
+  mlr.reservation_status AS reservationStatus, 
+  mlr.sale_date AS saleDate, 
+  mlr.reservation_date AS reservationDate, 
+  mlr.market_admin_id AS marketAdminId, 
+  ma.name AS marketAdminName, 
+  ma.surname AS marketAdminSurname, 
+  mlr.market_admin_merchant_name AS marketAdminMerchantName, 
+  mlr.market_admin_merchant_phonenumber AS marketAdminMerchantPhonenumber, 
+  mlr.merchant_id AS merchantId, 
+  m.name AS merchantName, 
+  m.surname AS merchantSurname, 
+  m.phonenumber AS merchantPhonenumber, 
+  mlr.product_type_id AS productTypeId, 
+  pt.name AS productTypeName, 
+  mlr.price AS marketLockPrice  
+  FROM market_lock_reservations AS mlr
+  JOIN product_types AS pt ON mlr.product_type_id = pt.product_type_id
+  JOIN market_locks AS ml ON mlr.market_lock_id = ml.market_lock_id
+  LEFT JOIN market_admins AS ma ON mlr.market_admin_id = ma.market_admin_id
+  LEFT JOIN merchants AS m ON mlr.merchant_id  = m.merchant_id
+  WHERE mlr.reservation_status = 1
+  AND mlr.market_lock_id = ?
+  AND sale_date = ?`;
+  connection.query(
+    query,
+    [marketLockId, saleDate],
     (error, results, fields) => {
       callback(error, results, fields);
     }
@@ -134,23 +169,6 @@ function cancelMarketLock({ saleDate, marketLockId }, callback) {
 function createMarketLock({ marketLockId, saleDate }, callback) {
   const query = `INSERT INTO market_lock_reservations (market_admin_id, market_lock_id, sale_date, reservation_status, merchant_id, product_type_id, reservation_date, price)
   VALUES (null, ?, ?, 0, null, null, null, null)`;
-  connection.query(
-    query,
-    [marketLockId, saleDate],
-    (error, results, fields) => {
-      callback(error, results, fields);
-    }
-  );
-}
-
-function getMarketLockDetail({ marketLockId, saleDate }, callback) {
-  const query = `SELECT mlr.market_admin_id AS marketAdminId, mlr.merchant_id AS merchantId, ml.name AS marketLockName, pt.name AS productTypeName  
-  FROM market_lock_reservations AS mlr
-  JOIN product_types AS pt ON mlr.product_type_id = pt.product_type_id
-  JOIN market_locks AS ml ON mlr.market_lock_id = ml.market_lock_id
-  WHERE mlr.reservation_status = 1
-  AND mlr.market_lock_id = ?
-  AND sale_date = ?`;
   connection.query(
     query,
     [marketLockId, saleDate],
