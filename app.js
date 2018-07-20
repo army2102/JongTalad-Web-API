@@ -10,6 +10,7 @@ const authRouter = require('./routes/auth');
 const marketsRouter = require('./routes/markets');
 const marketAdminsRouter = require('./routes/marketadmins');
 const merchantsRouter = require('./routes/merchants');
+const productTypesRouter = require('./routes/productTypes');
 const indexRouter = require('./routes/index');
 
 // view engine setup
@@ -26,6 +27,7 @@ app.use('/auth', authRouter);
 app.use('/markets', marketsRouter);
 app.use('/marketadmins', marketAdminsRouter);
 app.use('/merchants', merchantsRouter);
+app.use('/producttypes', productTypesRouter);
 app.use('/', indexRouter);
 
 app.listen(CONFIG.PORT, () =>
