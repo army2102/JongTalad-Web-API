@@ -19,7 +19,13 @@ router.post(
   '/:marketAdminId/markets/locks/:marketLockId/reserve',
   (req, res) => {
     const { marketAdminId, marketLockId } = req.params;
-    const { productTypeId, price, saleDate } = req.body;
+    const {
+      productTypeId,
+      price,
+      saleDate,
+      marketAdminMerchantName,
+      marketAdminMerchantPhonenumber
+    } = req.body;
     utility.checkMarketLockStatus(
       { saleDate, marketLockId, type: 1 },
       (error, results, fields) => {
@@ -33,6 +39,8 @@ router.post(
               marketAdminId,
               productTypeId,
               price,
+              marketAdminMerchantName,
+              marketAdminMerchantPhonenumber,
               saleDate,
               marketLockId
             },
@@ -70,16 +78,32 @@ function getMarketAdminMarketsById(id, callback) {
 }
 
 function reserveMarketLock(
-  { marketAdminId, productTypeId, price, saleDate, marketLockId },
+  {
+    marketAdminId,
+    productTypeId,
+    price,
+    saleDate,
+    marketLockId,
+    marketAdminMerchantName,
+    marketAdminMerchantPhonenumber
+  },
   callback
 ) {
   const query = `UPDATE market_lock_reservations
-  SET market_admin_id = ?, reservation_status = 1, product_type_id = ?, reservation_date = NOW(), price = ?
+  SET market_admin_id = ?, reservation_status = 1, product_type_id = ?, reservation_date = NOW(), price = ?, market_admin_merchant_name = ?, market_admin_merchant_phonenumber = ?
   WHERE sale_date = ?
   AND market_lock_id = ?`;
   connection.query(
     query,
-    [marketAdminId, productTypeId, price, saleDate, marketLockId],
+    [
+      marketAdminId,
+      productTypeId,
+      price,
+      marketAdminMerchantName,
+      marketAdminMerchantPhonenumber,
+      saleDate,
+      marketLockId
+    ],
     (error, results, fields) => {
       callback(error, results, fields);
     }
