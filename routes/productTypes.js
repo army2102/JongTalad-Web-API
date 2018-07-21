@@ -15,7 +15,7 @@ router.get('/', (req, res) => {
 });
 
 function getProductTypes(callback) {
-  const query = `SELECT product_type_id AS productTypeId ,name AS ProductTypeName
+  const query = `SELECT product_type_id AS productTypeId ,name AS productTypeName
     FROM product_types`;
   connection.query(query, (error, results, fields) => {
     callback(error, results, fields);
