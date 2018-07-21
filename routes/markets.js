@@ -71,7 +71,8 @@ router.post('/locks/:marketLockId/cancel', (req, res) => {
                     utility.createResponse(
                       201,
                       {
-                        insertId: results.insertId,
+
+                        cancelMarketLockId: marketLockId,
                         affectedRows: results.affectedRows,
                         changedRows: results.changedRows
                       },
@@ -107,7 +108,8 @@ function getMarketLocksByType({ marketId, type, saleDate }, callback) {
   JOIN markets ON ml.market_id = markets.market_id
   WHERE ml.market_id = ?
   AND mlr.reservation_status = ?
-  AND sale_date = ?`;
+  AND sale_date = ?
+  ORDER BY marketLockName`;
   connection.query(
     query,
     [marketId, type, saleDate],
