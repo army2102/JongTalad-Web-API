@@ -92,7 +92,8 @@ function reserveMarketLock(
   const query = `UPDATE market_lock_reservations
   SET market_admin_id = ?, reservation_status = 1, product_type_id = ?, reservation_date = NOW(), price = ?, market_admin_merchant_name = ?, market_admin_merchant_phonenumber = ?
   WHERE sale_date = ?
-  AND market_lock_id = ?`;
+  AND market_lock_id = ?
+  AND reservation_status = 0`;
   connection.query(
     query,
     [

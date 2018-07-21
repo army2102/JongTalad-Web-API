@@ -71,7 +71,8 @@ function reserveMarketLock(
   const query = `UPDATE market_lock_reservations
     SET merchant_id = ?, reservation_status = 1, product_type_id = ?, reservation_date = NOW(), price = ?
     WHERE sale_date = ?
-    AND market_lock_id = ?`;
+    AND market_lock_id = ?
+    AND reservation_status = 0`;
   connection.query(
     query,
     [merchantId, productTypeId, price, saleDate, marketLockId],
