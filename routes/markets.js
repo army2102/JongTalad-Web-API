@@ -158,7 +158,8 @@ function cancelMarketLock({ saleDate, marketLockId }, callback) {
   const query = `UPDATE market_lock_reservations
   SET reservation_status = 3
   WHERE sale_date = ?
-  AND market_lock_id = ?;`;
+  AND market_lock_id = ?
+  AND reservation_status = 1`;
   connection.query(
     query,
     [saleDate, marketLockId],
