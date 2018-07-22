@@ -6,7 +6,7 @@ const connection = require('./connect');
 
 router.get('/:marketAdminId/markets', (req, res) => {
   const { marketAdminId } = req.params;
-  getMarketAdminMarketsById(marketAdminId, (error, results, fields) => {
+  getVerifiedMarketAdminMarketsById(marketAdminId, (error, results, fields) => {
     if (error) {
       utility.createError(404, error, res);
     } else {
@@ -70,11 +70,12 @@ router.post(
   }
 );
 
-function getMarketAdminMarketsById(id, callback) {
+function getVerifiedMarketAdminMarketsById(id, callback) {
   const query = `SELECT mam.market_id AS marketId, mam.market_admin_id AS marketAdminId, markets.name AS marketName, markets.address AS marketAddress, markets.picture_url AS pictureUrl 
   FROM market_admin_markets AS mam 
   JOIN markets ON mam.market_id = markets.market_id 
-  WHERE market_admin_id = ?`;
+  WHERE market_admin_id = ?
+  AND markets.verified = 1`;
   connection.query(query, [id], (error, results, fields) => {
     callback(error, results, fields);
   });

@@ -11,32 +11,47 @@ router.get('/', (req, res, next) => {
 
 // Market admin authentication
 router.post('/register/marketadmin', (req, res) => {
-  const { username, password } = req.body;
-  findMarketAdminByUsernamePassword(
-    username,
-    password,
+  const {
+    marketAdminName,
+    marketAdminSurname,
+    marketAdminPhonenumber,
+    marketName,
+    marketAddress
+  } = req.body;
+  createMarketAdmin(
+    { marketAdminName, marketAdminSurname, marketAdminPhonenumber },
     (error, results, fields) => {
       if (error) {
         utility.createError(404, error, res);
-      }
-      if (results.length === 0) {
-        createMarketAdmin(username, password, (error, results, fields) => {
-          if (error) {
-            utility.createError(404, error, res);
-          } else {
-            utility.createResponse(
-              201,
-              {
-                insertId: results.insertId,
-                affectedRows: results.affectedRows,
-                changedRows: results.changedRows
-              },
-              res
-            );
-          }
-        });
       } else {
-        utility.createError(409, 'This username is already taken', res);
+        const marketAdminId = results.insertId;
+        createMarket(
+          { marketName, marketAddress },
+          (error, results, fields) => {
+            if (error) {
+              utility.createError(404, error, res);
+            } else {
+              const marketId = results.insertId;
+              assignMarketAdminToMarket(
+                { marketId, marketAdminId },
+                (error, results, fields) => {
+                  if (error) {
+                    utility.createError(404, error, res);
+                  } else {
+                    utility.createResponse(
+                      201,
+                      {
+                        marketId,
+                        marketAdminId
+                      },
+                      res
+                    );
+                  }
+                }
+              );
+            }
+          }
+        );
       }
     }
   );
@@ -134,11 +149,42 @@ function updateMarketAdminById(id, columnName, value, callback) {
   });
 }
 
-function createMarketAdmin(username, password, callback) {
-  const query = 'INSERT INTO market_admins (username, password) VALUES (?, ?)';
-  connection.query(query, [username, password], (error, results, fields) => {
-    callback(error, results, fields);
-  });
+function createMarketAdmin(
+  { marketAdminName, marketAdminSurname, marketAdminPhonenumber },
+  callback
+) {
+  const query =
+    'INSERT INTO market_admins (name, surname, phonenumber) VALUES (?, ?, ?)';
+  connection.query(
+    query,
+    [marketAdminName, marketAdminSurname, marketAdminPhonenumber],
+    (error, results, fields) => {
+      callback(error, results, fields);
+    }
+  );
+}
+
+function createMarket({ marketName, marketAddress }, callback) {
+  const query = 'INSERT INTO markets (name, address, verified) VALUES (?, ?, 0)';
+  connection.query(
+    query,
+    [marketName, marketAddress],
+    (error, results, fields) => {
+      callback(error, results, fields);
+    }
+  );
+}
+
+function assignMarketAdminToMarket({ marketId, marketAdminId }, callback) {
+  const query =
+    'INSERT INTO  market_admin_markets (market_id, market_admin_id) VALUES (?, ?)';
+  connection.query(
+    query,
+    [marketId, marketAdminId],
+    (error, results, fields) => {
+      callback(error, results, fields);
+    }
+  );
 }
 
 function findMerchantByUsernamePassword(username, password, callback) {
@@ -154,18 +200,6 @@ function createMerchant(username, password, callback) {
   connection.query(query, [username, password], (error, results, fields) => {
     callback(error, results, fields);
   });
-}
-
-function assignMarketAdminTo(marketAdminId, marketId, callback) {
-  const query =
-    'INSERT INTO  market_admin_markets (market_id, market_admin_id) VALUES (?, ?)';
-  connection.query(
-    query,
-    [marketAdminId, marketId],
-    (error, results, fields) => {
-      callback(error, results, fields);
-    }
-  );
 }
 
 module.exports = router;
