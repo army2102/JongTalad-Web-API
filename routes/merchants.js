@@ -36,6 +36,9 @@ router.post('/:merchantId/markets/locks/:marketLockId/reserve', (req, res) => {
           (error, results, fields) => {
             if (error) {
               utility.createError(404, error, res);
+            }
+            if (results.affectedRows === 0 && results.changedRows === 0) {
+              utility.createResponse(409, `This lock hasn't create yet`, res);
             } else {
               utility.createResponse(
                 200,
