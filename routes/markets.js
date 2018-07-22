@@ -12,6 +12,9 @@ router.get('/:marketId/locks/types/:type', (req, res) => {
     (error, results, fields) => {
       if (error) {
         utility.createError(404, error, res);
+      }
+      if (results.length === 0) {
+        utility.createError(404, 'No market lock for today', res);
       } else {
         utility.createResponse(200, results, res);
       }
@@ -71,7 +74,6 @@ router.post('/locks/:marketLockId/cancel', (req, res) => {
                     utility.createResponse(
                       201,
                       {
-
                         cancelMarketLockId: marketLockId,
                         affectedRows: results.affectedRows,
                         changedRows: results.changedRows
