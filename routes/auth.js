@@ -77,7 +77,14 @@ router.post('/login/marketadmin', (req, res) => {
 
 // Merchant authentication
 router.post('/register/merchant', (req, res) => {
-  const { username, password } = req.body;
+  const {
+    merchantName,
+    merchantSurname,
+    merchantPhonenumber,
+    merchantIdCard,
+    username,
+    password
+  } = req.body;
   findMerchantByUsernamePassword(
     username,
     password,
@@ -86,21 +93,31 @@ router.post('/register/merchant', (req, res) => {
         utility.createError(404, error, res);
       }
       if (results.length === 0) {
-        createMerchant(username, password, (error, results, fields) => {
-          if (error) {
-            utility.createError(404, error, res);
-          } else {
-            utility.createResponse(
-              201,
-              {
-                insertId: results.insertId,
-                affectedRows: results.affectedRows,
-                changedRows: results.changedRows
-              },
-              res
-            );
+        createMerchant(
+          {
+            merchantName,
+            merchantSurname,
+            merchantPhonenumber,
+            merchantIdCard,
+            username,
+            password
+          },
+          (error, results, fields) => {
+            if (error) {
+              utility.createError(404, error, res);
+            } else {
+              utility.createResponse(
+                201,
+                {
+                  insertId: results.insertId,
+                  affectedRows: results.affectedRows,
+                  changedRows: results.changedRows
+                },
+                res
+              );
+            }
           }
-        });
+        );
       } else {
         utility.createError(409, 'This username is already taken', res);
       }
@@ -134,21 +151,6 @@ function findMarketAdminByUsernamePassword(username, password, callback) {
   });
 }
 
-function findMarketAdminById(id, callback) {
-  const query =
-    'SELECT market_admin_id AS marketAdminId FROM market_admins WHERE market_admin_id = ?';
-  connection.query(query, [id], (error, results, fields) => {
-    callback(error, results, fields);
-  });
-}
-
-function updateMarketAdminById(id, columnName, value, callback) {
-  const query = 'UPDATE market_admins SET ?? = ?  WHERE market_admin_id = ?';
-  connection.query(query, [columnName, value, id], (error, results, fields) => {
-    callback(error, results, fields);
-  });
-}
-
 function createMarketAdmin(
   { marketAdminName, marketAdminSurname, marketAdminPhonenumber },
   callback
@@ -165,7 +167,8 @@ function createMarketAdmin(
 }
 
 function createMarket({ marketName, marketAddress }, callback) {
-  const query = 'INSERT INTO markets (name, address, verified) VALUES (?, ?, 0)';
+  const query =
+    'INSERT INTO markets (name, address, verified) VALUES (?, ?, 0)';
   connection.query(
     query,
     [marketName, marketAddress],
@@ -195,11 +198,32 @@ function findMerchantByUsernamePassword(username, password, callback) {
   });
 }
 
-function createMerchant(username, password, callback) {
-  const query = 'INSERT INTO merchants (username, password) VALUES (?, ?)';
-  connection.query(query, [username, password], (error, results, fields) => {
-    callback(error, results, fields);
-  });
+function createMerchant(
+  {
+    merchantName,
+    merchantSurname,
+    merchantPhonenumber,
+    merchantIdCard,
+    username,
+    password
+  },
+  callback
+) {
+  const query = `INSERT INTO merchants (name, surname, phonenumber, id_card, username, password) VALUES (?, ?, ?, ?, ?, ?)`;
+  connection.query(
+    query,
+    [
+      merchantName,
+      merchantSurname,
+      merchantPhonenumber,
+      merchantIdCard,
+      username,
+      password
+    ],
+    (error, results, fields) => {
+      callback(error, results, fields);
+    }
+  );
 }
 
 module.exports = router;
