@@ -17,43 +17,61 @@ router.get('/markets', (req, res) => {
 router.post('/:merchantId/markets/locks/:marketLockId/reserve', (req, res) => {
   const { merchantId, marketLockId } = req.params;
   const { productTypeId, price, saleDate } = req.body;
-  utility.checkMarketLockStatus(
-    { saleDate, marketLockId, type: 1 },
+  const MAXIMUM_LOCK_RESERVATION = 3;
+  checkNumberOfReservedMarketLock(
+    { saleDate, merchantId },
     (error, results, fields) => {
       if (error) {
         utility.createError(404, error, res);
       }
 
-      if (results.length === 0) {
-        reserveMarketLock(
-          {
-            merchantId,
-            productTypeId,
-            price,
-            saleDate,
-            marketLockId
-          },
+      if (results.length >= 3) {
+        utility.createError(409, `You can not reserve more that 3 locks`, res);
+      } else {
+        utility.checkMarketLockStatus(
+          { saleDate, marketLockId, type: 1 },
           (error, results, fields) => {
             if (error) {
               utility.createError(404, error, res);
             }
-            if (results.affectedRows === 0 && results.changedRows === 0) {
-              utility.createResponse(409, `This lock hasn't create yet`, res);
-            } else {
-              utility.createResponse(
-                200,
+
+            if (results.length === 0) {
+              reserveMarketLock(
                 {
-                  reservedMarketLockId: marketLockId,
-                  affectedRows: results.affectedRows,
-                  changedRows: results.changedRows
+                  merchantId,
+                  productTypeId,
+                  price,
+                  saleDate,
+                  marketLockId
                 },
-                res
+                (error, results, fields) => {
+                  if (error) {
+                    utility.createError(404, error, res);
+                  }
+                  if (results.affectedRows === 0 && results.changedRows === 0) {
+                    utility.createResponse(
+                      409,
+                      `This lock hasn't create yet`,
+                      res
+                    );
+                  } else {
+                    utility.createResponse(
+                      200,
+                      {
+                        reservedMarketLockId: marketLockId,
+                        affectedRows: results.affectedRows,
+                        changedRows: results.changedRows
+                      },
+                      res
+                    );
+                  }
+                }
               );
+            } else {
+              utility.createResponse(409, 'This lock is already reserved', res);
             }
           }
         );
-      } else {
-        utility.createResponse(409, 'This lock is already reserved', res);
       }
     }
   );
@@ -64,6 +82,17 @@ function getVerifiedMarkets(callback) {
   FROM markets 
   WHERE verified = 1`;
   connection.query(query, (error, results, fields) => {
+    callback(error, results, fields);
+  });
+}
+
+function checkNumberOfReservedMarketLock({ saleDate, merchantId }, callback) {
+  const query = `SELECT mlr.market_lock_id AS marketLockId, ml.name AS marketLockName
+  FROM market_lock_reservations AS mlr
+  JOIN market_locks AS ml ON mlr.market_lock_id = ml.market_lock_id 
+  WHERE sale_date = ?
+  AND merchant_id = ?`;
+  connection.query(query, [saleDate, merchantId], (error, results, fields) => {
     callback(error, results, fields);
   });
 }
