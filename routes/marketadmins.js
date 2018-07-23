@@ -54,6 +54,7 @@ router.post(
                 utility.createResponse(
                   200,
                   {
+                    reservedMarketLockId: marketLockId,
                     affectedRows: results.affectedRows,
                     changedRows: results.changedRows
                   },

@@ -43,6 +43,7 @@ router.post('/:merchantId/markets/locks/:marketLockId/reserve', (req, res) => {
               utility.createResponse(
                 200,
                 {
+                  reservedMarketLockId: marketLockId,
                   affectedRows: results.affectedRows,
                   changedRows: results.changedRows
                 },
