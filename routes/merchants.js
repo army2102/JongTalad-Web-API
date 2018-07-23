@@ -90,8 +90,9 @@ function checkNumberOfReservedMarketLock({ saleDate, merchantId }, callback) {
   const query = `SELECT mlr.market_lock_id AS marketLockId, ml.name AS marketLockName
   FROM market_lock_reservations AS mlr
   JOIN market_locks AS ml ON mlr.market_lock_id = ml.market_lock_id 
-  WHERE sale_date = ?
-  AND merchant_id = ?`;
+  WHERE mlr.sale_date = ?
+  AND mlr.merchant_id = ?
+  AND mlr.reservation_status = 1`;
   connection.query(query, [saleDate, merchantId], (error, results, fields) => {
     callback(error, results, fields);
   });
