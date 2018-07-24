@@ -6,7 +6,9 @@ const logger = require('morgan');
 
 const CONFIG = require('./config/config');
 const app = express();
+const cron = require('./cronjob/cronjob');
 const authRouter = require('./routes/auth');
+const cronJobRouter = require('./routes/cronjob');
 const marketsRouter = require('./routes/markets');
 const marketAdminsRouter = require('./routes/marketadmins');
 const merchantsRouter = require('./routes/merchants');
@@ -24,11 +26,15 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/auth', authRouter);
+app.use('/cronjob', cronJobRouter);
 app.use('/markets', marketsRouter);
 app.use('/marketadmins', marketAdminsRouter);
 app.use('/merchants', merchantsRouter);
 app.use('/producttypes', productTypesRouter);
 app.use('/', indexRouter);
+
+//
+cron.job.start();
 
 app.listen(CONFIG.PORT, () =>
   console.log(`Server started on port: ${CONFIG.PORT}`)
